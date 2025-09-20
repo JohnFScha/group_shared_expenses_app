@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router";
 import { lazy } from "react";
 
 const DashboardLayout = lazy(() =>
-  import("@/pages/DashboardPage.tsx").then((m) => ({ default: m.DashboardPage }))
+  import("@/components/DashboardLayout.tsx").then((m) => ({ default: m.DashboardLayout }))
 );
 const DashboardPage = lazy(() =>
   import("@/pages/DashboardPage.tsx").then((m) => ({ default: m.DashboardPage }))
