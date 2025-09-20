@@ -1,6 +1,6 @@
 import { Unauthenticated, Authenticated } from "convex/react";
 import { Navigate } from "react-router";
-import { SignInForm } from "../SignInForm";
+import { SignInForm } from "@/components/SignInForm.tsx";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 
 export function LoginPage() {

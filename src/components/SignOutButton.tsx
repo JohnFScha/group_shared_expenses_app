@@ -1,7 +1,7 @@
 "use client";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useConvexAuth } from "convex/react";
-import { Button } from "./components/ui/button";
+import { Button } from "./ui/button";
 import { LogOut } from "lucide-react";
 
 export function SignOutButton() {
