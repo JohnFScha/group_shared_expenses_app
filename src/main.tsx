@@ -7,6 +7,19 @@ import App from "./App";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((registration) => {
+        console.log("SW registered: ", registration);
+      })
+      .catch((registrationError) => {
+        console.log("SW registration failed: ", registrationError);
+      });
+  });
+}
+
 createRoot(document.getElementById("root")!).render(
   <ConvexAuthProvider client={convex}>
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">

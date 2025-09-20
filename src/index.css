@@ -116,7 +116,35 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
+    font-family: 'Ubuntu Sans', sans-serif;
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: var(--color-primary);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background-color: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background-color: var(--color-accent);
+    }
+
+    ::-webkit-scrollbar-thumb:active {
+      background-color: var(--color-primary);
+    }
+
+    ::-webkit-scrollbar-corner {
+      background-color: transparent;
+    }
   }
 }
