@@ -63,9 +63,9 @@ function DashboardSidebar({ data, user }: DashboardSidebarProps) {
   return (
     <Sidebar variant="inset" collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-4 py-2">
-          <div className={`flex shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground transition-all ${open ? "size-8" : "size-4"}`}>
-            <DollarSign className="size-2" />
+        <div className={`flex items-center gap-2 px-3 py-4 ${open ? "justify-start" : "justify-center p-0"}`}>
+          <div className={`flex shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground transition-all size-7`}>
+            <DollarSign className={"size-4"} />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
             <span className="truncate font-semibold">Shared Expenses</span>
