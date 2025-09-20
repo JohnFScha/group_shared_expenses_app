@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { internal } from "./_generated/api";
 
 export const createGroup = mutation({
   args: {
@@ -159,6 +160,18 @@ export const inviteUserToGroup = mutation({
       throw new Error("Not a member of this group");
     }
 
+    // Get the group details
+    const group = await ctx.db.get(args.groupId);
+    if (!group) {
+      throw new Error("Group not found");
+    }
+
+    // Get the inviter's information
+    const inviter = await ctx.db.get(userId);
+    if (!inviter) {
+      throw new Error("Inviter not found");
+    }
+
     // Find user by email
     const targetUser = await ctx.db
       .query("users")
@@ -187,6 +200,17 @@ export const inviteUserToGroup = mutation({
       userId: targetUser._id,
       joinedAt: Date.now(),
     });
+
+    // Send invitation email
+    if (targetUser.email) {
+      await ctx.scheduler.runAfter(0, internal.sendEmails.sendGroupInvitationEmail, {
+        recipientEmail: targetUser.email,
+        recipientName: targetUser.name,
+        inviterName: inviter.name || inviter.email || "Someone",
+        groupName: group.name,
+        groupDescription: group.description,
+      });
+    }
 
     return targetUser._id;
   },
