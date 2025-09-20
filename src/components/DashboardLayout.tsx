@@ -37,6 +37,7 @@ import {
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { ThemeToggler } from "./theme-toggler.tsx";
 
 interface SidebarData {
   title: string;
@@ -204,14 +205,15 @@ export function DashboardLayout() {
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
-          <div className="flex items-center gap-2">
+          <div className="flex justify-between items-center gap-2 w-full">
             <span className="text-lg font-semibold">Shared Expenses</span>
+            <ThemeToggler />
           </div>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-10">
           <Outlet />
         </main>
       </SidebarInset>
-    </SidebarProvider>
+    </SidebarProvider >
   );
 }
