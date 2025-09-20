@@ -138,7 +138,7 @@ export const sendGroupInvitationEmail = internalMutation({
     
     await resend.sendEmail(ctx, {
       from: "spplitty@resend.dev", // Update with your actual domain
-      to: args.recipientEmail,
+      to: `${args.recipientEmail}@resend.dev`,
       subject: `You've been invited to join "${args.groupName}" by ${args.inviterName}`,
       html: htmlContent,
     });
