@@ -1,4 +1,5 @@
 import React from "react";
+import { Outlet, useNavigate } from "react-router";
 import {
   Sidebar,
   SidebarContent,
@@ -35,12 +36,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { useNavigation } from "../hooks/useNavigation";
 import { useAuthActions } from "@convex-dev/auth/react";
-
-interface DashboardLayoutProps {
-  children: React.ReactNode;
-}
 
 interface SidebarData {
   title: string;
@@ -155,13 +151,13 @@ function DashboardSidebar({ data, user }: DashboardSidebarProps) {
   );
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+export function DashboardLayout() {
   const loggedInUser = useQuery(api.auth.loggedInUser);
-  const { navigateTo } = useNavigation();
+  const navigate = useNavigate();
 
-  // Handle navigation using the navigation context
+  // Handle navigation using React Router
   const handleNavigation = (section: string) => {
-    navigateTo(section as any);
+    void navigate(`/${section === 'dashboard' ? '' : section}`);
   };
 
   const sidebarData: SidebarData[] = [
@@ -213,7 +209,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">
-          {children}
+          <Outlet />
         </div>
       </SidebarInset>
     </SidebarProvider>
