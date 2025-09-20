@@ -12,7 +12,7 @@ export const resend: Resend = new Resend(components.resend, {
 export const sendTestEmail = internalMutation({
   handler: async (ctx) => {
     await resend.sendEmail(ctx, {
-      from: "Me <spplitty@resend.dev>",
+      from: "spplitty@resend.dev",
       to: "delivered@resend.dev",
       subject: "Hi there",
       html: "This is a test email",
@@ -137,7 +137,7 @@ export const sendGroupInvitationEmail = internalMutation({
     );
     
     await resend.sendEmail(ctx, {
-      from: "Group Expenses <spplitty@resend.dev>", // Update with your actual domain
+      from: "spplitty@resend.dev", // Update with your actual domain
       to: args.recipientEmail,
       subject: `You've been invited to join "${args.groupName}" by ${args.inviterName}`,
       html: htmlContent,
