@@ -8,13 +8,48 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { User, Shield, Bell } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 export function SettingsPage() {
   const { signOut } = useAuthActions();
   const loggedInUser = useQuery(api.auth.loggedInUser);
   const deleteAccount = useMutation(api.auth.deleteAccount);
+  const updateUserProfile = useMutation(api.auth.updateUserProfile);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+  });
+
+  // Initialize form data when user data loads
+  useEffect(() => {
+    if (loggedInUser) {
+      setFormData({
+        name: loggedInUser.name || "",
+      });
+    }
+  }, [loggedInUser]);
+
+  const handleSaveChanges = async () => {
+    if (!formData.name.trim()) {
+      toast.error("Name cannot be empty");
+      return;
+    }
+
+    try {
+      setIsUpdating(true);
+      await updateUserProfile({
+        name: formData.name,
+      });
+      toast.success("Profile updated successfully!");
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+      toast.error("Failed to update profile. Please try again.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const handleDeleteAccount = async () => {
     try {
@@ -53,9 +88,9 @@ export function SettingsPage() {
               <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
-                value={loggedInUser?.name || ""}
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="Your full name"
-                readOnly
               />
             </div>
             <div className="grid gap-2">
@@ -67,8 +102,16 @@ export function SettingsPage() {
                 placeholder="your.email@example.com"
                 readOnly
               />
+              <p className="text-sm text-muted-foreground">
+                Email cannot be changed at this time
+              </p>
             </div>
-            <Button disabled>Save Changes</Button>
+            <Button 
+              onClick={() => void handleSaveChanges()}
+              disabled={isUpdating || !formData.name.trim() || formData.name === (loggedInUser?.name || "")}
+            >
+              {isUpdating ? "Saving..." : "Save Changes"}
+            </Button>
           </CardContent>
         </Card>
 

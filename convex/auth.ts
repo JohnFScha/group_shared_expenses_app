@@ -22,6 +22,40 @@ export const loggedInUser = query({
   },
 });
 
+export const updateUserProfile = mutation({
+  args: {
+    name: v.optional(v.string()),
+    // Note: email updates might require additional verification in a production app
+    // For now, we'll allow it but you may want to add email verification flow
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Build update object with only the provided fields
+    const updates: Record<string, any> = {};
+    
+    if (args.name !== undefined && args.name.trim() !== "") {
+      updates.name = args.name.trim();
+    }
+
+    // Only update if there are changes to make
+    if (Object.keys(updates).length > 0) {
+      await ctx.db.patch(userId, updates);
+    }
+
+    return null;
+  },
+});
+
 export const deleteAccount = mutation({
   args: {},
   returns: v.null(),
