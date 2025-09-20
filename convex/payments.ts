@@ -184,3 +184,44 @@ export const getGroupBalances = query({
     return balances.filter(b => b.user);
   },
 });
+
+export const deletePayment = mutation({
+  args: { paymentId: v.id("payments") },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    const payment = await ctx.db.get(args.paymentId);
+    if (!payment) {
+      throw new Error("Payment not found");
+    }
+
+    // Check if user is a member of the group
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_group_and_user", (q) => 
+        q.eq("groupId", payment.groupId).eq("userId", userId)
+      )
+      .unique();
+
+    if (!membership) {
+      throw new Error("Not a member of this group");
+    }
+
+    // Only allow the person who made the payment or group creator to delete
+    const group = await ctx.db.get(payment.groupId);
+    if (!group) {
+      throw new Error("Group not found");
+    }
+
+    if (payment.fromUserId !== userId && group.createdBy !== userId) {
+      throw new Error("Only the person who made the payment or group creator can delete this payment");
+    }
+
+    await ctx.db.delete(args.paymentId);
+    return null;
+  },
+});

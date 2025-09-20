@@ -1,10 +1,23 @@
-import { useQuery } from "convex/react";
+import { useState } from "react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Avatar, AvatarFallback } from "./ui/avatar";
-import { Receipt, Calendar, Loader2 } from "lucide-react";
+import { Button } from "./ui/button";
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from "./ui/alert-dialog";
+import { Receipt, Calendar, Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface ExpenseListProps {
   groupId: Id<"groups">;
@@ -12,6 +25,18 @@ interface ExpenseListProps {
 
 export function ExpenseList({ groupId }: ExpenseListProps) {
   const expenses = useQuery(api.expenses.getGroupExpenses, { groupId });
+  const deleteExpense = useMutation(api.expenses.deleteExpense);
+  const [expenseToDelete, setExpenseToDelete] = useState<Id<"expenses"> | null>(null);
+
+  const handleDeleteExpense = async (expenseId: Id<"expenses">) => {
+    try {
+      await deleteExpense({ expenseId });
+      toast.success("Expense deleted successfully");
+      setExpenseToDelete(null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete expense");
+    }
+  };
 
   if (expenses === undefined) {
     return (
@@ -48,7 +73,7 @@ export function ExpenseList({ groupId }: ExpenseListProps) {
             key={expense._id}
             className="flex items-center justify-between p-4 rounded-lg border bg-card"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-1">
               <Avatar>
                 <AvatarFallback>
                   {(expense.paidByUser?.name || expense.paidByUser?.email || "?")
@@ -59,7 +84,7 @@ export function ExpenseList({ groupId }: ExpenseListProps) {
                     .slice(0, 2)}
                 </AvatarFallback>
               </Avatar>
-              <div>
+              <div className="flex-1">
                 <h3 className="font-medium">{expense.description}</h3>
                 <p className="text-sm text-muted-foreground">
                   Paid by {expense.paidByUser?.name || expense.paidByUser?.email || "Unknown"}
@@ -70,14 +95,41 @@ export function ExpenseList({ groupId }: ExpenseListProps) {
                 </div>
               </div>
             </div>
-            <div className="text-right">
+            <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-lg font-semibold">
                 ${expense.amount.toFixed(2)}
               </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setExpenseToDelete(expense._id)}
+                className="h-8 w-8 p-0"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         ))}
       </CardContent>
+      <AlertDialog open={expenseToDelete !== null} onOpenChange={(open) => !open && setExpenseToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Expense</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this expense? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => expenseToDelete && void handleDeleteExpense(expenseToDelete)}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

@@ -1,31 +1,37 @@
 import React from "react";
-import { 
-  Sidebar, 
-  SidebarContent, 
-  SidebarFooter, 
-  SidebarGroup, 
-  SidebarGroupContent, 
-  SidebarGroupLabel, 
-  SidebarHeader, 
-  SidebarInset, 
-  SidebarMenu, 
-  SidebarMenuButton, 
-  SidebarMenuItem, 
-  SidebarProvider, 
-  SidebarTrigger 
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+  useSidebar
 } from "./ui/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Separator } from "./ui/separator";
-import { Button } from "./ui/button";
 import { Avatar, AvatarFallback } from "./ui/avatar";
-import { 
-  Users, 
-  DollarSign, 
-  CreditCard, 
-  BarChart3, 
+import {
+  Users,
+  DollarSign,
   Settings,
   Home,
-  Plus,
-  LogOut
+  LogOut,
+  ChevronDown,
+  User
 } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -56,13 +62,14 @@ interface DashboardSidebarProps {
 
 function DashboardSidebar({ data, user }: DashboardSidebarProps) {
   const { signOut } = useAuthActions();
-  
+  const { open } = useSidebar();
+
   return (
-    <Sidebar variant="inset">
+    <Sidebar variant="inset" collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center gap-2 px-4 py-2">
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <DollarSign className="size-4" />
+          <div className={`flex shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground transition-all ${open ? "size-8" : "size-4"}`}>
+            <DollarSign className="size-2" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
             <span className="truncate font-semibold">Shared Expenses</span>
@@ -70,7 +77,7 @@ function DashboardSidebar({ data, user }: DashboardSidebarProps) {
           </div>
         </div>
       </SidebarHeader>
-      
+
       <SidebarContent>
         {data.map((section, index) => (
           <SidebarGroup key={index}>
@@ -79,7 +86,7 @@ function DashboardSidebar({ data, user }: DashboardSidebarProps) {
               <SidebarMenu>
                 {section.items.map((item, itemIndex) => (
                   <SidebarMenuItem key={itemIndex}>
-                    <SidebarMenuButton 
+                    <SidebarMenuButton
                       onClick={item.onClick}
                       variant={item.variant}
                     >
@@ -93,30 +100,53 @@ function DashboardSidebar({ data, user }: DashboardSidebarProps) {
           </SidebarGroup>
         ))}
       </SidebarContent>
-      
+
       {user && (
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <div className="flex items-center gap-2 px-2 py-1.5">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>
-                    {user.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .toUpperCase()
-                      .slice(0, 2)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{user.name}</span>
-                  <span className="truncate text-xs text-muted-foreground">{user.email}</span>
-                </div>
-                <Button variant="ghost" size="icon" onClick={() => void signOut()}>
-                  <LogOut className="size-4" />
-                </Button>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <SidebarMenuButton
+                    size="lg"
+                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                  >
+                    <Avatar className="h-8 w-8 rounded-lg">
+                      <AvatarFallback className="rounded-lg">
+                        {user.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                      <span className="truncate font-semibold">{user.name}</span>
+                      <span className="truncate text-xs">{user.email}</span>
+                    </div>
+                    <ChevronDown className="ml-auto size-4" />
+                  </SidebarMenuButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+                  side="bottom"
+                  align="end"
+                  sideOffset={4}
+                >
+                  <DropdownMenuItem>
+                    <User className="mr-2 size-4" />
+                    Cuenta
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Settings className="mr-2 size-4" />
+                    Configuración
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => void signOut()}>
+                    <LogOut className="mr-2 size-4" />
+                    Cerrar sesión
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>
@@ -151,34 +181,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       ],
     },
     {
-      title: "Finances",
-      items: [
-        {
-          title: "Expenses",
-          icon: DollarSign,
-          onClick: () => handleNavigation("expenses"),
-        },
-        {
-          title: "Payments",
-          icon: CreditCard,
-          onClick: () => handleNavigation("payments"),
-        },
-        {
-          title: "Balances",
-          icon: BarChart3,
-          onClick: () => handleNavigation("balances"),
-        },
-      ],
-    },
-    {
       title: "Actions",
       items: [
-        {
-          title: "Add Expense",
-          icon: Plus,
-          onClick: () => handleNavigation("select-group-for-expense"),
-          variant: "outline" as const,
-        },
+
         {
           title: "Settings",
           icon: Settings,
@@ -195,8 +200,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <SidebarProvider>
-      <DashboardSidebar 
-        data={sidebarData} 
+      <DashboardSidebar
+        data={sidebarData}
         user={userData}
       />
       <SidebarInset>

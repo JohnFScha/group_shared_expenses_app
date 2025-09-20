@@ -187,3 +187,60 @@ export const inviteUserToGroup = mutation({
     return targetUser._id;
   },
 });
+
+export const removeMember = mutation({
+  args: { 
+    groupId: v.id("groups"),
+    memberUserId: v.id("users")
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    // Check if current user is a member
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_group_and_user", (q) => 
+        q.eq("groupId", args.groupId).eq("userId", userId)
+      )
+      .unique();
+
+    if (!membership) {
+      throw new Error("Not a member of this group");
+    }
+
+    // Get group to check creator
+    const group = await ctx.db.get(args.groupId);
+    if (!group) {
+      throw new Error("Group not found");
+    }
+
+    // Only group creator can remove members, or members can remove themselves
+    if (group.createdBy !== userId && args.memberUserId !== userId) {
+      throw new Error("Only the group creator can remove other members");
+    }
+
+    // Cannot remove the group creator
+    if (args.memberUserId === group.createdBy) {
+      throw new Error("Cannot remove the group creator");
+    }
+
+    // Find the membership to remove
+    const membershipToRemove = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_group_and_user", (q) => 
+        q.eq("groupId", args.groupId).eq("userId", args.memberUserId)
+      )
+      .unique();
+
+    if (!membershipToRemove) {
+      throw new Error("User is not a member of this group");
+    }
+
+    await ctx.db.delete(membershipToRemove._id);
+    return null;
+  },
+});

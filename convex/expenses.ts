@@ -81,3 +81,44 @@ export const getGroupExpenses = query({
     return expensesWithUsers;
   },
 });
+
+export const deleteExpense = mutation({
+  args: { expenseId: v.id("expenses") },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    const expense = await ctx.db.get(args.expenseId);
+    if (!expense) {
+      throw new Error("Expense not found");
+    }
+
+    // Check if user is a member of the group
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_group_and_user", (q) => 
+        q.eq("groupId", expense.groupId).eq("userId", userId)
+      )
+      .unique();
+
+    if (!membership) {
+      throw new Error("Not a member of this group");
+    }
+
+    // Only allow the person who paid or group creator to delete
+    const group = await ctx.db.get(expense.groupId);
+    if (!group) {
+      throw new Error("Group not found");
+    }
+
+    if (expense.paidBy !== userId && group.createdBy !== userId) {
+      throw new Error("Only the person who paid or group creator can delete this expense");
+    }
+
+    await ctx.db.delete(args.expenseId);
+    return null;
+  },
+});
