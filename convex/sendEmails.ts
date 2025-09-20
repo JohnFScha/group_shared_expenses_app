@@ -6,7 +6,7 @@ import { v } from "convex/values";
 export const resend: Resend = new Resend(components.resend, {
   apiKey: process.env.RESEND_API_KEY!,
   webhookSecret: process.env.RESEND_WEBHOOK_SECRET!,
-  testMode: true, // Set to false in production
+  testMode: false, // Set to false in production
 });
 
 export const sendTestEmail = internalMutation({
@@ -137,8 +137,8 @@ export const sendGroupInvitationEmail = internalMutation({
     );
     
     await resend.sendEmail(ctx, {
-      from: "spplitty@resend.dev", // Update with your actual domain
-      to: `${args.recipientEmail}@resend.dev`,
+      from: "jfscha@spplitty.com", // Update with your actual domain
+      to: args.recipientEmail,
       subject: `You've been invited to join "${args.groupName}" by ${args.inviterName}`,
       html: htmlContent,
     });
